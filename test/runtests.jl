@@ -1,6 +1,8 @@
 using BlockMatching
+using Images, TestImages
 using Test
 
 @testset "BlockMatching.jl" begin
-    # Write your tests here.
+    include("utils.jl")
+    include("strategies/full_search.jl")
 end

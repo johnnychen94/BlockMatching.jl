@@ -1,18 +1,19 @@
 using BlockMatching
-using Documenter
+using Documenter, DemoCards
+
+format = Documenter.HTML(;
+    prettyurls=get(ENV, "CI", "false") == "true",
+    canonical="https://johnnychen94.github.io/BlockMatching.jl",
+    assets=String[],
+)
 
 makedocs(;
     modules=[BlockMatching],
-    authors="Johnny Chen <johnnychen94@hotmail.com>",
-    repo="https://github.com/johnnychen94/BlockMatching.jl/blob/{commit}{path}#L{line}",
     sitename="BlockMatching.jl",
-    format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://johnnychen94.github.io/BlockMatching.jl",
-        assets=String[],
-    ),
+    format=format,
     pages=[
         "Home" => "index.md",
+        "References" => "reference.md"
     ],
 )
 
