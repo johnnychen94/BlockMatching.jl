@@ -22,12 +22,12 @@ function best_match(S::FullSearch, ref, frame, p::CartesianIndex; offset=false)
     rₚ = S.patch_radius
     R_frame = CartesianIndices(frame)
     R_frame = first(R_frame) + rₚ : last(R_frame) - rₚ
-    p in R_frame || throw(ArgumentError("pixel `p = $p` should be within $(first(R_frame)):$(last(R_frame))."))
+    p in R_frame || throw(ArgumentError("Boundary unsupported now: pixel `p = $p` should be within $(first(R_frame)):$(last(R_frame))."))
 
     R_ref = CartesianIndices(ref)
     R_ref = first(R_ref) + rₚ : last(R_ref) - rₚ
-    q_start = max(first(R_ref) + S.patch_radius, p - S.search_radius)
-    q_stop = min(last(R_ref) - S.patch_radius, p + S.search_radius)
+    q_start = max(first(R_ref), p - S.search_radius)
+    q_stop = min(last(R_ref), p + S.search_radius)
     candidates = q_start:S.search_stride:q_stop
 
     patch_p = frame[p - S.patch_radius:p + S.patch_radius]
@@ -57,9 +57,9 @@ function best_match(S::FullSearch, ref, frame; offset=false)
     matches = OffsetArray(similar(CartesianIndices(R_frame)), rₚ.I)
 
     # pre-allocation to reduce memeory allocation
-    p = CartesianIndex((last(R_frame) - first(R_frame)).I .÷ 2) # use center point to initialize
-    q_start = max(first(R_ref) + S.patch_radius, p - S.search_radius)
-    q_stop = min(last(R_ref) - S.patch_radius, p + S.search_radius)
+    p = CartesianIndex((last(R_frame) + first(R_frame)).I .÷ 2) # use center point to initialize
+    q_start = max(first(R_ref), p - S.search_radius)
+    q_stop = min(last(R_ref), p + S.search_radius)
     candidates = q_start:S.search_stride:q_stop
     @assert length(candidates) > 0
     patch_p = frame[p-rₚ:p+rₚ] # pre-allocation into a contiguous memory layout
@@ -68,8 +68,8 @@ function best_match(S::FullSearch, ref, frame; offset=false)
     for p in R_frame
         patch_p .= @view frame[p-rₚ:p+rₚ]
 
-        q_start = max(first(R_ref) + S.patch_radius, p - S.search_radius)
-        q_stop = min(last(R_ref) - S.patch_radius, p + S.search_radius)
+        q_start = max(first(R_ref), p - S.search_radius)
+        q_stop = min(last(R_ref), p + S.search_radius)
         candidates = q_start:S.search_stride:q_stop
         n = length(candidates)
         for k in 1:n
@@ -93,12 +93,12 @@ function multi_match(S::FullSearch, ref, frame, p::CartesianIndex; num_patches, 
     rₚ = S.patch_radius
     R_frame = CartesianIndices(frame)
     R_frame = first(R_frame) + rₚ : last(R_frame) - rₚ
-    p in R_frame || throw(ArgumentError("pixel `p = $p` should be within $(first(R_frame)):$(last(R_frame))."))
+    p in R_frame || throw(ArgumentError("Boundary unsupported now: pixel `p = $p` should be within $(first(R_frame)):$(last(R_frame))."))
 
     R_ref = CartesianIndices(ref)
     R_ref = first(R_ref) + rₚ : last(R_ref) - rₚ
-    q_start = max(first(R_ref) + S.patch_radius, p - S.search_radius)
-    q_stop = min(last(R_ref) - S.patch_radius, p + S.search_radius)
+    q_start = max(first(R_ref), p - S.search_radius)
+    q_stop = min(last(R_ref), p + S.search_radius)
     candidates = q_start:S.search_stride:q_stop
 
     patch_p = frame[p - S.patch_radius:p + S.patch_radius]
@@ -131,9 +131,9 @@ function multi_match(S::FullSearch, ref, frame; num_patches, offset=false)
     matches = OffsetArray(matches, rₚ.I)
 
     # pre-allocation to reduce memeory allocation
-    p = CartesianIndex((last(R_frame) - first(R_frame)).I .÷ 2) # use center point to initialize
-    q_start = max(first(R_ref) + S.patch_radius, p - S.search_radius)
-    q_stop = min(last(R_ref) - S.patch_radius, p + S.search_radius)
+    p = CartesianIndex((last(R_frame) + first(R_frame)).I .÷ 2) # use center point to initialize
+    q_start = max(first(R_ref), p - S.search_radius)
+    q_stop = min(last(R_ref), p + S.search_radius)
     candidates = q_start:S.search_stride:q_stop
     @assert length(candidates) > 0
     patch_p = frame[p-rₚ:p+rₚ] # pre-allocation into a contiguous memory layout
@@ -142,8 +142,8 @@ function multi_match(S::FullSearch, ref, frame; num_patches, offset=false)
     for p in R_frame
         patch_p .= @view frame[p-rₚ:p+rₚ]
 
-        q_start = max(first(R_ref) + S.patch_radius, p - S.search_radius)
-        q_stop = min(last(R_ref) - S.patch_radius, p + S.search_radius)
+        q_start = max(first(R_ref), p - S.search_radius)
+        q_stop = min(last(R_ref), p + S.search_radius)
         candidates = q_start:S.search_stride:q_stop
         n = length(candidates)
         for k in 1:n
