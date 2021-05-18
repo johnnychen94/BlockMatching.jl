@@ -1,6 +1,5 @@
 module BlockMatching
 
-using LazyDistances
 using OffsetArrays
 
 export FullSearch, best_match, multi_match

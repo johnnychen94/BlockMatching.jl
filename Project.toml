@@ -4,11 +4,9 @@ authors = ["Johnny Chen <johnnychen94@hotmail.com>"]
 version = "0.1.0"
 
 [deps]
-LazyDistances = "62e00516-fc32-4340-9c6d-efb7813ad70c"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 
 [compat]
-LazyDistances = "0.1"
 OffsetArrays = "1"
 julia = "1"
 
