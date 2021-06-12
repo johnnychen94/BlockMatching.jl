@@ -1,5 +1,5 @@
 using BlockMatching
-using Images, TestImages
+using ImageTransformations, TestImages, TestImages, ImageDistances
 using Test
 
 @testset "BlockMatching.jl" begin

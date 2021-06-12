@@ -1,6 +1,7 @@
 module BlockMatching
 
 using OffsetArrays
+using Distances
 
 export FullSearch, best_match, multi_match
 
@@ -85,7 +86,7 @@ true
 * [`multi_match`](@ref) can be used when multiple candidates are wanted.
 """
 best_match(S::AbstractBlockMatchingStrategy, ref; kwargs...) = best_match(S, ref, ref; kwargs...)
-best_match(S::AbstractBlockMatchingStrategy, ref, p::CartesianIndex; kwargs...) = best_match(S, ref, ref, p; kwargs...)
+best_match(S::AbstractBlockMatchingStrategy, ref, p; kwargs...) = best_match(S, ref, ref, p; kwargs...)
 
 """
     multi_match(S::AbstractBlockMatchingStrategy, ref, frame=ref, [p::CartesianIndex]; num_patches, offset=true)
@@ -169,7 +170,7 @@ true
 sophisticated strategies, e.g., ThreeStepSearch.
 """
 multi_match(S::AbstractBlockMatchingStrategy, ref; kwargs...) = multi_match(S, ref, ref; kwargs...)
-multi_match(S::AbstractBlockMatchingStrategy, ref, p::CartesianIndex; kwargs...) = multi_match(S, ref, ref, p; kwargs...)
+multi_match(S::AbstractBlockMatchingStrategy, ref, p; kwargs...) = multi_match(S, ref, ref, p; kwargs...)
 
 
 include("utils.jl")
