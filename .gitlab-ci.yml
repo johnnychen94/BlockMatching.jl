@@ -1,0 +1,26 @@
+include:
+  - 'https://gitlab.lflab.cn/lflab_ci/gitlab-ci-templates/raw/master/julia-ci/v1.yml'
+
+test:1.6:
+  variables:
+    julia_version: "1.6"
+  extends:
+    - .julia
+    - .test
+
+test:1.6-gpu:
+  variables:
+    julia_version: "1.6"
+  tags:
+    - nvidia
+  extends:
+    - .julia
+    - .test
+
+test:nightly:
+  variables:
+    julia_version: "nightly"
+  extends:
+    - .julia
+    - .test
+  allow_failure: true
