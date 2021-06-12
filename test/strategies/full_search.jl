@@ -3,6 +3,12 @@
     img = imrotate(ref, 0.2, CartesianIndices(ref).indices)
     X = repeat(collect(1:9), inner=(3, 7))
 
+    S = FullSearch(SqEuclidean(), 2, patch_radius=1, search_radius=1)
+    @test S ==
+        FullSearch(2, patch_radius=1, search_radius=1) ==
+        FullSearch(2, patch_radius=(1, 1), search_radius=(1, 1)) == 
+        FullSearch(2, patch_radius=CartesianIndex(1, 1), search_radius=CartesianIndex(1, 1))
+
     @testset "correctness test" begin
         S = FullSearch(SqEuclidean(), ndims(X), patch_radius=1, search_radius=1)
         @test_throws ArgumentError best_match(S, X, X, CartesianIndex(1, 1))
