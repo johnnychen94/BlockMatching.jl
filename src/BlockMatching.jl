@@ -2,6 +2,7 @@ module BlockMatching
 
 using OffsetArrays
 using Distances
+using Requires
 
 export FullSearch, best_match, multi_match
 
@@ -175,5 +176,12 @@ multi_match(S::AbstractBlockMatchingStrategy, ref, p; kwargs...) = multi_match(S
 
 include("utils.jl")
 include("strategies/full_search.jl")
+
+function __init__()
+    @require CUDA="052768ef-5323-5732-b1bb-66c8b64840ba" begin
+        include("strategies/full_search_cuda.jl")
+    end
+end
+
 
 end

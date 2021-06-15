@@ -20,3 +20,10 @@ _to_cartesian(::Val{N}, i::Int) where N = __to_cartesian(ntuple(_->i, N))
 _to_cartesian(::Val{N}, t::NTuple{N, Int}) where N = __to_cartesian(t)
 _to_cartesian(::Val{N}, t::CartesianIndex{N}) where N = t
 __to_cartesian(t::NTuple{N, Int}) where N = CartesianIndex(t)
+
+
+function size_check(ref, frame)
+    Base.require_one_based_indexing(ref)
+    Base.require_one_based_indexing(frame)
+    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+end

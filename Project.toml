@@ -6,8 +6,10 @@ version = "0.1.0"
 [deps]
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 Distances = "0.9, 0.10"
 OffsetArrays = "1"
+Requires = "1"
 julia = "1"

@@ -18,9 +18,7 @@ FullSearch(f, N; patch_radius, search_radius, search_stride=1) =
     FullSearch{typeof(f),N}(f, to_cartesian(N, patch_radius, search_radius, search_stride)...)
 
 function best_match(S::FullSearch, ref, frame, p::CartesianIndex; offset=false)
-    Base.require_one_based_indexing(ref)
-    Base.require_one_based_indexing(frame)
-    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+    size_check(ref, frame)
 
     rₚ = S.patch_radius
     R_frame = CartesianIndices(frame)
@@ -46,9 +44,7 @@ function best_match(S::FullSearch, ref, frame, p::CartesianIndex; offset=false)
 end
 
 function best_match(S::FullSearch, ref, frame; offset=false)
-    Base.require_one_based_indexing(ref)
-    Base.require_one_based_indexing(frame)
-    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+    size_check(ref, frame)
 
     rₚ = S.patch_radius
 
@@ -89,9 +85,7 @@ function best_match(S::FullSearch, ref, frame; offset=false)
 end
 
 function multi_match(S::FullSearch, ref, frame, p::CartesianIndex; num_patches, offset=false)
-    Base.require_one_based_indexing(ref)
-    Base.require_one_based_indexing(frame)
-    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+    size_check(ref, frame)
 
     rₚ = S.patch_radius
     R_frame = CartesianIndices(frame)
@@ -118,9 +112,7 @@ function multi_match(S::FullSearch, ref, frame, p::CartesianIndex; num_patches, 
 end
 
 function multi_match(S::FullSearch, ref, frame; num_patches, offset=false)
-    Base.require_one_based_indexing(ref)
-    Base.require_one_based_indexing(frame)
-    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+    size_check(ref, frame)
 
     rₚ = S.patch_radius
 
