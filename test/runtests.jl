@@ -13,7 +13,7 @@ try
     @eval using CUDA
     use_cuda = true
 catch e
-    e isa IOError || @warn e LOAD_PATH
+    e isa Base.IOError || @warn e LOAD_PATH
 end
 if use_cuda
     @info "run CUDA test"
