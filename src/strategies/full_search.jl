@@ -80,7 +80,7 @@ function best_match(S::FullSearch, ref, frame; offset=false)
         matches[p] = candidates[idx]
     end
     
-    offset && (matches .= matches .- R_frame)
+    offset && (matches .= matches .- OffsetArray(R_frame, rₚ.I))
     return matches
 end
 
@@ -151,8 +151,8 @@ function multi_match(S::FullSearch, ref, frame; num_patches, offset=false)
 
     if offset
         _offset(p, qs) = map(q->q-p, qs)
-        _offset.(R_frame, matches)
+        return _offset.(OffsetArray(R_frame, rₚ.I) , matches)
     else
-        matches
+        return matches
     end
 end

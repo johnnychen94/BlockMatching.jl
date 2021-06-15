@@ -49,8 +49,11 @@ function best_match(
 
     cu_matches = CuArray(fill(CartesianIndex(0, 0), size(frame)))
     @cuda threads=threads blocks=blocks fullsearch_kernel!(cu_matches, ref, frame, rₚ, Δₛ, rₛ)
-    matches = Array(cu_matches)[3:end-3, 3:end-3]
 
-    offset && (matches .= matches .- R_frame)
+    R_frame = CartesianIndices(cu_matches)
+    R_frame = first(R_frame)+rₚ:last(R_frame)-rₚ
+    matches = OffsetArray(Array(view(cu_matches, R_frame)), rₚ.I)
+
+    offset && (matches .= matches .- OffsetArray(R_frame, rₚ.I))
     return matches
 end
