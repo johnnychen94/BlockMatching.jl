@@ -21,7 +21,7 @@ function fullsearch_kernel!(R, ref, frame, rₚ, Δₛ, rₛ)
     # NOTE:
     # For better performance, loop along the row order. This could
     # produce results that different to CPU versions on constant fields.
-    for px in px_start:Δx:px_end, py in py_start:Δy:py_end
+    @inbounds for px in px_start:Δx:px_end, py in py_start:Δy:py_end
         qx_start = max(rₚx+1, px - rₛx)
         qy_start = max(rₚy+1, py - rₛy)
         qx_end = min(px_end, px + rₛx)
