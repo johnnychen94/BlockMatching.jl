@@ -51,7 +51,7 @@ function best_match(
     size_check(ref, frame)
 
     threads = (16, 16)
-    blocks = ceil.(Int, size(ref).÷threads)
+    blocks = ceil.(Int, size(ref)./threads)
 
     cu_matches = CuArray(fill(CartesianIndex(0, 0), size(frame)))
     @cuda threads=threads blocks=blocks fullsearch_kernel!(cu_matches, ref, frame, rₚ, Δₛ, rₛ)
