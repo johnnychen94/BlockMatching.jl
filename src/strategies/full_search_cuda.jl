@@ -6,28 +6,34 @@ function fullsearch_kernel!(R, ref, frame, rₚ, Δₛ, rₛ)
     Δₛx, Δₛy = Δₛ.I
     rₛx, rₛy = rₛ.I
 
-    px_start = max(rₚx+1, (blockIdx().x - 1) * blockDim().x + threadIdx().x)
-    py_start = max(rₚy+1, (blockIdx().y - 1) * blockDim().y + threadIdx().y)
+    px_start = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+    py_start = (blockIdx().y - 1) * blockDim().y + threadIdx().y
     Δx = gridDim().x * blockDim().x
     Δy = gridDim().y * blockDim().y
     px_end = M-rₚx
     py_end = N-rₚy
 
+    if px_start <= rₚx || py_start <= rₚy
+        return nothing
+    end
+
     T = eltype(frame)
+    # NOTE:
+    # For better performance, loop along the row order. This could
+    # produce results that different to CPU versions on constant fields.
     for px in px_start:Δx:px_end, py in py_start:Δy:py_end
-        qx_start = max(px_start, px - rₛx)
-        qy_start = max(py_start, py - rₛy)
+        qx_start = max(rₚx+1, px - rₛx)
+        qy_start = max(rₚy+1, py - rₛy)
         qx_end = min(px_end, px + rₛx)
         qy_end = min(py_end, py + rₛy)
 
-        min_val, min_pos = T(Inf), CartesianIndex(1, 1)
+        min_val, min_pos = T(Inf), CartesianIndex(qx_start, qy_start)
         for qx in qx_start:Δₛx:qx_end, qy in qy_start:Δₛy:qy_end
             val = zero(T)
             for ox in -rₚx:rₚx, oy in -rₚy:rₚy
-                d = ref[px+ox, py+oy] - frame[qx+ox, qy+oy]
-                val += d*d
+                val += abs2(frame[px+ox, py+oy] - ref[qx+ox, qy+oy])
             end
-            if val <= min_val
+            if val < min_val
                 min_val = val
                 min_pos = CartesianIndex(qx, qy)
             end
