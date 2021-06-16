@@ -1,4 +1,5 @@
 using BlockMatching
+using Distances
 using ImageTransformations, TestImages, TestImages, ImageDistances
 using Test
 
@@ -26,6 +27,7 @@ end
     include("strategies/full_search.jl")
 
     if use_cuda
+        CUDA.allowscalar(false)
         include("strategies/full_search_cuda.jl")
     end
 end

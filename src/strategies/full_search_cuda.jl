@@ -1,6 +1,6 @@
 using .CUDA
 
-function fullsearch_kernel!(R, ref, frame, rₚ, Δₛ, rₛ)
+function fullsearch_kernel!(R, ref, frame, f, rₚ, Δₛ, rₛ)
     M, N = size(frame)
     rₚx, rₚy = rₚ.I
     Δₛx, Δₛy = Δₛ.I
@@ -29,10 +29,11 @@ function fullsearch_kernel!(R, ref, frame, rₚ, Δₛ, rₛ)
 
         min_val, min_pos = T(Inf), CartesianIndex(qx_start, qy_start)
         for qx in qx_start:Δₛx:qx_end, qy in qy_start:Δₛy:qy_end
-            val = zero(T)
+            val = Distances.eval_start(f, ref, frame)
             for ox in -rₚx:rₚx, oy in -rₚy:rₚy
-                val += abs2(frame[px+ox, py+oy] - ref[qx+ox, qy+oy])
+                val = Distances.eval_reduce(f, val, Distances.eval_op(f, frame[px+ox, py+oy], ref[qx+ox, qy+oy]))
             end
+            val = Distances.eval_end(f, val)
             if val < min_val
                 min_val = val
                 min_pos = CartesianIndex(qx, qy)
@@ -43,10 +44,14 @@ function fullsearch_kernel!(R, ref, frame, rₚ, Δₛ, rₛ)
     return nothing
 end
 
+# modified from https://github.com/JuliaStats/Distances.jl/blob/988c92b8b2b6d8a28e1b8aea336f572025ada2f2/src/metrics.jl#L198
+# some metrics are removed because they are not supported yet: RogersTanimoto
+DistancesMetrics = Union{Euclidean,SqEuclidean,PeriodicEuclidean,Chebyshev,Cityblock,TotalVariation,Minkowski,Hamming,Jaccard,CosineDist,ChiSqDist,KLDivergence,RenyiDivergence,BrayCurtis,JSDivergence,SpanNormDist,GenKLDivergence}
+
 function best_match(
         S::FullSearch{F},
         ref::CuArray{<:Real,2},
-        frame::CuArray{<:Real,2}; offset=false) where F<:SqEuclidean
+        frame::CuArray{<:Real,2}; offset=false) where F<:DistancesMetrics
     rₚ, Δₛ, rₛ = S.patch_radius, S.search_stride, S.search_radius
     size_check(ref, frame)
 
@@ -54,7 +59,7 @@ function best_match(
     blocks = ceil.(Int, size(ref)./threads)
 
     cu_matches = CuArray(fill(CartesianIndex(0, 0), size(frame)))
-    @cuda threads=threads blocks=blocks fullsearch_kernel!(cu_matches, ref, frame, rₚ, Δₛ, rₛ)
+    @cuda threads=threads blocks=blocks fullsearch_kernel!(cu_matches, ref, frame, S.f, rₚ, Δₛ, rₛ)
 
     R_frame = CartesianIndices(cu_matches)
     R_frame = first(R_frame)+rₚ:last(R_frame)-rₚ
