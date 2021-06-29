@@ -18,9 +18,7 @@ FullSearch(f, N; patch_radius, search_radius, search_stride=1) =
     FullSearch{typeof(f),N}(f, to_cartesian(N, patch_radius, search_radius, search_stride)...)
 
 function best_match(S::FullSearch, ref, frame, p::CartesianIndex; offset=false)
-    Base.require_one_based_indexing(ref)
-    Base.require_one_based_indexing(frame)
-    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+    size_check(ref, frame)
 
     rₚ = S.patch_radius
     R_frame = CartesianIndices(frame)
@@ -46,9 +44,7 @@ function best_match(S::FullSearch, ref, frame, p::CartesianIndex; offset=false)
 end
 
 function best_match(S::FullSearch, ref, frame; offset=false)
-    Base.require_one_based_indexing(ref)
-    Base.require_one_based_indexing(frame)
-    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+    size_check(ref, frame)
 
     rₚ = S.patch_radius
 
@@ -84,14 +80,12 @@ function best_match(S::FullSearch, ref, frame; offset=false)
         matches[p] = candidates[idx]
     end
     
-    offset && (matches .= matches .- R_frame)
+    offset && (matches .= matches .- OffsetArray(R_frame, rₚ.I))
     return matches
 end
 
 function multi_match(S::FullSearch, ref, frame, p::CartesianIndex; num_patches, offset=false)
-    Base.require_one_based_indexing(ref)
-    Base.require_one_based_indexing(frame)
-    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+    size_check(ref, frame)
 
     rₚ = S.patch_radius
     R_frame = CartesianIndices(frame)
@@ -118,9 +112,7 @@ function multi_match(S::FullSearch, ref, frame, p::CartesianIndex; num_patches, 
 end
 
 function multi_match(S::FullSearch, ref, frame; num_patches, offset=false)
-    Base.require_one_based_indexing(ref)
-    Base.require_one_based_indexing(frame)
-    any(size(ref) .< size(frame)) && throw(ArgumentError("`size(ref) = $(size(ref))` should be larger than `size(frame) = $(size(frame))`."))
+    size_check(ref, frame)
 
     rₚ = S.patch_radius
 
@@ -130,8 +122,7 @@ function multi_match(S::FullSearch, ref, frame; num_patches, offset=false)
     R_frame = first(R_frame) + rₚ : last(R_frame) - rₚ
     R_ref = first(R_ref) + rₚ : last(R_ref) - rₚ
 
-    matches = Array{Vector{CartesianIndex{ndims(ref)}}, ndims(ref)}(undef, size(R_frame))
-    matches = OffsetArray(matches, rₚ.I)
+    matches = Array{CartesianIndex{ndims(ref)}}(undef, size(R_frame)..., num_patches)
 
     # pre-allocation to reduce memeory allocation
     p = CartesianIndex((last(R_frame) + first(R_frame)).I .÷ 2) # use center point to initialize
@@ -154,13 +145,11 @@ function multi_match(S::FullSearch, ref, frame; num_patches, offset=false)
             patch_q = @view ref[q-rₚ:q+rₚ]
             dist[k] = S.f(patch_p, patch_q)
         end
-        matches[p] = candidates[partialsortperm(view(dist, 1:n), 1:num_patches)]
+        matches[p-rₚ, :] .= @view candidates[partialsortperm(view(dist, 1:n), 1:num_patches)]
     end
 
     if offset
-        _offset(p, qs) = map(q->q-p, qs)
-        _offset.(R_frame, matches)
-    else
-        matches
+        matches .-= R_frame
     end
+    return OffsetArray(matches, (rₚ.I..., 0))
 end
