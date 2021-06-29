@@ -1,4 +1,5 @@
 using BlockMatching
+using Images, TestImages
 using Documenter, DemoCards
 
 format = Documenter.HTML(;

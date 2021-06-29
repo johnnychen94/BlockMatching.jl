@@ -88,7 +88,7 @@ If `o=Base.Order.Reverse`, then it's the lowest `K` numbers.
 julia> data = rand(1:20, 20);
 
 julia> vals, inds = BlockMatching.topk(data, 5)
-([3, 13, 10, 19, 13], [5, 4, 1, 3, 2])
+([16, 16, 19, 19, 19], [16, 14, 7, 3, 17])
 
 julia> data[inds] == vals
 true
