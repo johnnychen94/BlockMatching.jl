@@ -43,11 +43,6 @@ For given pixel `p` in `frame`, find the best match pixel `q` in `ref` with bloc
 If `p` is given, it returns `CartesianIndex{N}`. Otherwise the block matching operates on
 the whole image and returns `Array{CartesianIndex{N}, N}`, i.e., the motion field.
 
-!!! note
-    If `p` is not given and if inputs are `CuArray` then GPU methods will be applied for a small
-    set of predefined distances from Distances.jl. The result will be slightly different from its
-    CPU version.
-
 # Examples
 
 If pixel `p` is provided, block matching only operates on the given pixel, the output is the matched
@@ -130,11 +125,6 @@ For given pixel `p` in `frame`, find matched pixels `q`s in `ref` with block mat
 If `p` is given, it returns `Vector{CartesianIndex{N}}`. Otherwise the block matching operates on
 the whole image and returns `Array{CartesianIndex{N}, N+1}`, where the extra N+1 dimension stores
 the matched vector.
-
-!!! note
-    If `p` is not given and if inputs are `CuArray` then GPU methods will be applied for a small set
-    of predefined distances from Distances.jl. The result will be slightly different from its CPU
-    version. The matched order in the extra dimension can also be different.
 
 # Examples
 

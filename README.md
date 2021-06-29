@@ -11,3 +11,17 @@ computer vision tasks. Block matching is a data and computational intense algori
 of high priority for this package.
 
 🚧 This is still a WIP project.
+
+Two functions are provided as the standard API:
+
+- `best_match`: finds the best matching candidate. This is also known as nearest neighbor search.
+- `multi_match`: sort the similarities of all candidates and return the smallest K results. This is sometimes known as K nearest neighbor search or top-k selection.
+
+Available block matching strategies:
+
+- `FullSearch`(brute force): search among all possible candidates. This gives the most accurate result 
+  but is computationally intensive. CUDA is supported for commonly used distances defined in 
+  [Distances.jl].
+
+
+[Distances.jl]: https://github.com/JuliaStats/Distances.jl
