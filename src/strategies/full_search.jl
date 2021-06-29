@@ -4,7 +4,7 @@
 Construct a block matching algorithm with full search strategy. In some literature, this is also
 called _exhaustive search_.
 
-The default patch distance is `Distances.SqEuclidean()`.
+The default patch distance is `Distances.Cityblock()`.
 """
 struct FullSearch{F,N} <: AbstractBlockMatchingStrategy
     f::F
@@ -13,7 +13,7 @@ struct FullSearch{F,N} <: AbstractBlockMatchingStrategy
     search_stride::CartesianIndex{N}
 end
 
-FullSearch(N; kwargs...) = FullSearch(SqEuclidean(), N; kwargs...)
+FullSearch(N; kwargs...) = FullSearch(Cityblock(), N; kwargs...)
 FullSearch(f, N; patch_radius, search_radius, search_stride=1) =
     FullSearch{typeof(f),N}(f, to_cartesian(N, patch_radius, search_radius, search_stride)...)
 

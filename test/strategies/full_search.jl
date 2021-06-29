@@ -3,7 +3,7 @@
     img = imrotate(ref, 0.2, axes(ref))
     X = repeat(collect(1:9), inner=(3, 7))
 
-    S = FullSearch(SqEuclidean(), 2, patch_radius=1, search_radius=1)
+    S = FullSearch(Cityblock(), 2, patch_radius=1, search_radius=1)
     @test S ==
         FullSearch(2, patch_radius=1, search_radius=1) ==
         FullSearch(2, patch_radius=(1, 1), search_radius=(1, 1)) == 
