@@ -1,7 +1,7 @@
 name = "BlockMatching"
 uuid = "100fd195-2f51-49a3-864c-eaaf5f23bc5e"
 authors = ["Johnny Chen <johnnychen94@hotmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
