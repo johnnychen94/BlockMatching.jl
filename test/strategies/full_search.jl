@@ -1,6 +1,6 @@
 @testset "FullSearch" begin
     ref = imresize(testimage("cameraman"), (64, 64))
-    img = imrotate(ref, 0.2, CartesianIndices(ref).indices)
+    img = imrotate(ref, 0.2, axes(ref))
     X = repeat(collect(1:9), inner=(3, 7))
 
     S = FullSearch(SqEuclidean(), 2, patch_radius=1, search_radius=1)
@@ -15,6 +15,8 @@
 
         p = best_match(S, X, X, CartesianIndex(3, 3))
         @test p in [CartesianIndex(3, 2), CartesianIndex(3, 3), CartesianIndex(3, 4)]
+        po = best_match(S, X, X, CartesianIndex(3, 3); offset=true)
+        @test po == p - CartesianIndex(3, 3)
 
         p = best_match(S, X, X, CartesianIndex(3, 4))
         @test p in [CartesianIndex(3, 3), CartesianIndex(3, 4), CartesianIndex(3, 5)]
@@ -41,6 +43,11 @@
         @test motion_field == map(CartesianIndices(motion_field)) do p
             best_match(S, img, ref, p)
         end
+
+        motion_field = best_match(S, img, ref; offset=true)
+        @test motion_field == map(CartesianIndices(motion_field)) do p
+            best_match(S, img, ref, p; offset=true)
+        end
     end
 
     @testset "multi_match" begin
@@ -48,13 +55,17 @@
 
         multi_motion_field = multi_match(S, img, ref; num_patches=5)
         # check if `multi_motion_field[p] == multi_match(S, img, ref, p)`
-        @test multi_motion_field == map(CartesianIndices(multi_motion_field)) do p
-            multi_match(S, img, ref, p; num_patches=5)
-        end
+        @test all(map(CartesianIndices(axes(multi_motion_field)[1:2])) do p
+            multi_motion_field[p, :] == multi_match(S, img, ref, p; num_patches=5)
+        end)
 
-        # check if when `num_patches=1`, it has the same result of `best_match`;
-        # except that it's array of array
+        multi_motion_field = multi_match(S, img, ref; num_patches=5, offset=true)
+        @test all(map(CartesianIndices(axes(multi_motion_field)[1:2])) do p
+            multi_motion_field[p, :] == multi_match(S, img, ref, p; num_patches=5, offset=true)
+        end)
+
+        # check if when `num_patches=1`, it should have the same result of `best_match`
         multi_motion_field = multi_match(S, img, ref; num_patches=1)
-        @test map(first, multi_motion_field) == best_match(S, img, ref)
+        @test multi_motion_field[:, :] == best_match(S, img, ref)
     end
 end

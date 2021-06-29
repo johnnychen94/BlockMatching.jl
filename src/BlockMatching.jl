@@ -2,13 +2,15 @@ module BlockMatching
 
 using OffsetArrays
 using Distances
+using Requires
 
 export FullSearch, best_match, multi_match
 
 abstract type AbstractBlockMatchingStrategy end
 
 """
-    best_match(S::AbstractBlockMatchingStrategy, ref, [frame=ref], [p::CartesianIndex]; offset=false)
+    best_match(S::AbstractBlockMatchingStrategy, ref, [frame=ref]; offset=false)
+    best_match(S::AbstractBlockMatchingStrategy, ref, [frame=ref], p; offset=false)
 
 For given pixel `p` in `frame`, find the best match pixel `q` in `ref` with block matching strategy
 `S`. If `p` is not provided, it operates on all pixels `p ∈ CartesianIndices(ref)` and returns an array.
@@ -41,6 +43,11 @@ For given pixel `p` in `frame`, find the best match pixel `q` in `ref` with bloc
 If `p` is given, it returns `CartesianIndex{N}`. Otherwise the block matching operates on
 the whole image and returns `Array{CartesianIndex{N}, N}`, i.e., the motion field.
 
+!!! note
+    If `p` is not given and if inputs are `CuArray` then GPU methods will be applied for a small
+    set of predefined distances from Distances.jl. The result will be slightly different from its
+    CPU version.
+
 # Examples
 
 If pixel `p` is provided, block matching only operates on the given pixel, the output is the matched
@@ -62,8 +69,8 @@ best_match(S, img, ref, p)
 CartesianIndex(17, 14)
 ```
 
-Otherwise, the block matching operates on the whole image. Each item of the output array is the
-matched pixels `q`s for `p`, i.e., `best_match(S, ref, frame)[p] = best_match(S, ref, frame, p)`.
+If `p` is not provided, the block matching operates on the whole image. Each item of the output array
+is the matched pixels `q`s for `p`, i.e., `best_match(S, ref, frame)[p] = best_match(S, ref, frame, p)`.
 
 ```jldoctest best_match
 julia> matches = best_match(S, img, ref);
@@ -86,10 +93,11 @@ true
 * [`multi_match`](@ref) can be used when multiple candidates are wanted.
 """
 best_match(S::AbstractBlockMatchingStrategy, ref; kwargs...) = best_match(S, ref, ref; kwargs...)
-best_match(S::AbstractBlockMatchingStrategy, ref, p; kwargs...) = best_match(S, ref, ref, p; kwargs...)
+best_match(S::AbstractBlockMatchingStrategy, ref, p::CartesianIndex; kwargs...) = best_match(S, ref, ref, p; kwargs...)
 
 """
-    multi_match(S::AbstractBlockMatchingStrategy, ref, frame=ref, [p::CartesianIndex]; num_patches, offset=true)
+    multi_match(S::AbstractBlockMatchingStrategy, ref, [frame=ref]; num_patches, offset=true)
+    multi_match(S::AbstractBlockMatchingStrategy, ref, [frame=ref], p::CartesianIndex; num_patches, offset=true)
 
 For given pixel `p` in `frame`, find matched pixels `q`s in `ref` with block matching strategy `S`.
 
@@ -120,7 +128,13 @@ For given pixel `p` in `frame`, find matched pixels `q`s in `ref` with block mat
 # Output
 
 If `p` is given, it returns `Vector{CartesianIndex{N}}`. Otherwise the block matching operates on
-the whole image and returns `Array{Vector{CartesianIndex{N}}, N}`.
+the whole image and returns `Array{CartesianIndex{N}, N+1}`, where the extra N+1 dimension stores
+the matched vector.
+
+!!! note
+    If `p` is not given and if inputs are `CuArray` then GPU methods will be applied for a small set
+    of predefined distances from Distances.jl. The result will be slightly different from its CPU
+    version. The matched order in the extra dimension can also be different.
 
 # Examples
 
@@ -154,7 +168,7 @@ julia> matches = multi_match(S, img, ref; num_patches=2);
 julia> summary(matches)
 "64×64 $(Matrix{Vector{CartesianIndex{2}}})"
 
-julia> matches[p] == multi_match(S, img, ref, p; num_patches=2)
+julia> matches[p, :] == multi_match(S, img, ref, p; num_patches=2)
 true
 ```
 
@@ -170,10 +184,16 @@ true
 sophisticated strategies, e.g., ThreeStepSearch.
 """
 multi_match(S::AbstractBlockMatchingStrategy, ref; kwargs...) = multi_match(S, ref, ref; kwargs...)
-multi_match(S::AbstractBlockMatchingStrategy, ref, p; kwargs...) = multi_match(S, ref, ref, p; kwargs...)
+multi_match(S::AbstractBlockMatchingStrategy, ref, p::CartesianIndex; kwargs...) = multi_match(S, ref, ref, p; kwargs...)
 
 
 include("utils.jl")
 include("strategies/full_search.jl")
+
+function __init__()
+    @require CUDA="052768ef-5323-5732-b1bb-66c8b64840ba" begin
+        include("strategies/full_search_cuda.jl")
+    end
+end
 
 end
